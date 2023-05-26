@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.imlty.dao.RoleMapper">
+    <!--查询所有角色||条件查询-->
+    <select id="findAllRole" resultType="top.imlty.domain.Role" parameterType="top.imlty.domain.Role">
+        select * from roles
+        <where>
+            <if test="name != null and name !='' ">
+                and name like concat('%',#{name},'%')
+            </if>
+        </where>
+    </select>
+
+    <!--根据角色id查询对应的菜单id-->
+    <select id="findMenuIdByRoleId" resultType="int" parameterType="int">
+        SELECT m.`id`FROM roles r LEFT JOIN role_menu_relation rm ON r.id =
+        rm.`role_id` LEFT JOIN menu m ON rm.`menu_id` = m.`id` WHERE r.id = #{id}
+    </select>
+    <!--根据roleId删除角色菜单中间表-->
+    <delete id="deleteRoleContextMenuByRoleId" parameterType="int" >
+        delete from role_menu_relation where role_id =#{rid}
+    </delete>
+    <!--为角色分配菜单-->
+    <insert id="RoleContextMenu" parameterType="top.imlty.domain.User_Role_relation">
+        insert into role_menu_relation values (null,#{menuId},#{roleId},
+        #{createdTime},#{updatedTime},#{createdBy},#{updatedBy})
+    </insert>
+    <!--删除角色信息-->
+    <delete id="deleteRole" parameterType="int">
+        delete from roles where id = #{id}
+    </delete>
+    <!--根据角色id 查询当前角色拥有的资源分类信息-->
+    <select id="findResourceCategoryListByRoleId" parameterType="int" resultType="top.imlty.domain.ResourceCategory">
+        SELECT DISTINCT
+          rc.*
+        FROM
+          role_resource_relation rr
+          INNER JOIN resource r
+            ON rr.`resource_id` = r.`id`
+            INNER JOIN resource_category rc
+            ON rc.id = r.category_id
+            where rr.`role_id` =#{roleId}
+    </select>
+    <!--根据角色id查询对应的资源信息-->
+    <select id="findResourceListByRoleId"  resultType="top.imlty.domain.Resource">
+        SELECT DISTINCT
+          r.*
+        FROM
+          role_resource_relation rr
+          INNER JOIN resource r
+            ON rr.`resource_id` = r.`id`
+        WHERE rr.`role_id` = #{roleId} and  category_id= #{c_id}
+    </select>
+    <!--根据角色ID 删除角色与资源的关联关系-->
+    <delete id="deleteRoleContextResourcesByRoleId" parameterType="int">
+        delete from role_resource_relation where role_id =#{id}
+    </delete>
+    <!--为角色分配资源-->
+    <insert id="RoleContextResources" parameterType="top.imlty.domain.RoleResourceRelation">
+        insert into role_resource_relation values (null,#{resource_id},#{role_id},
+        #{created_time},#{updated_time},#{created_by},#{updated_by})
+    </insert>
+
+    <!--编辑角色信息-->
+    <update id="updateRole" parameterType="top.imlty.domain.Role" >
+        update Roles
+
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null and code != ''">
+                code = #{code},
+            </if>
+
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+
+            <if test="createdTime != null">
+                created_time=#{createdTime},
+            </if>
+
+            <if test="updatedTime != null">
+                updated_time=#{updatedTime},
+            </if>
+
+            <if test="updatedBy != updatedBy">
+                updated_by=#{updatedBy},
+            </if>
+
+        </trim>
+
+        <where>
+            <if test="id != null and id != '' ">id = #{id}</if>
+        </where>
+    </update>
+
+    <!--新增角色-->
+    <insert id="saveRole" parameterType="top.imlty.domain.Role">
+        insert into Roles values(null,#{code},#{name},#{description},#{createdTime},#{updatedTime},#{createdBy},#{updatedBy})
+    </insert>
+</mapper>

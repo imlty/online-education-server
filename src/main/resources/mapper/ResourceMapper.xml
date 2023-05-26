@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.imlty.dao.ResourceMapper">
+    <!--查找资源信息-->
+    <select id="findAllResourceByPage" parameterType="top.imlty.vo.ResourceVO" resultType="top.imlty.domain.Resource">
+
+        select * from resource
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name},'%')
+            </if>
+            <if test="url != null and url != ''">
+                and url = #{url}
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                and category_id =#{categoryId}
+            </if>
+        </where>
+    </select>
+    <!--保存资源信息-->
+    <insert id="saveResource" parameterType="top.imlty.domain.Resource">
+        insert into resource values(null,#{name},#{url},#{categoryId},#{description},#{createdTime},#{updatedTime},#{createdBy},#{updatedBy})
+    </insert>
+    <!--更新资源信息-->
+    <update id="updateResource" parameterType="top.imlty.domain.Resource">
+        update resource
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+
+            <if test="url != null and url != ''">
+                url = #{url},
+            </if>
+
+            <if test="categoryId != null and categoryId != ''">
+                category_id = #{categoryId},
+            </if>
+
+            <if test="createdTime != null">
+                created_time=#{createdTime},
+            </if>
+
+            <if test="updatedTime != null">
+                updated_time=#{updatedTime},
+            </if>
+
+            <if test="createdBy != null">
+                created_by=#{createdBy},
+            </if>
+
+            <if test="updatedBy != updatedBy">
+                updated_by=#{updatedBy},
+            </if>
+
+        </trim>
+
+        <where>
+            <if test="id != null and id != '' ">id = #{id}</if>
+        </where>
+
+    </update>
+
+
+    <!-- void deleteResource(Integer id);
+         private Integer id;
+private String name;
+private Date createdTime;
+private Date updatedTime;
+private String createdBy;
+private String updatedBy;
+     -->
+    <!--删除资源信息-->
+    <delete id="deleteResource" parameterType="int">
+        delete from resource where id = #{id}
+    </delete>
+</mapper>

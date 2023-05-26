@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.imlty.dao.PromotionSpaceMapper">
+    <!--查询所有的广告位-->
+    <select id="findAllPromotionSpace" resultType="top.imlty.domain.PromotionSpace">
+       select * from promotion_space
+    </select>
+    <!--添加广告位-->
+    <insert id="savePromotionSpace"
+            parameterType="top.imlty.domain.PromotionSpace">
+        insert into promotion_space values(null,#{name},#{spaceKey},#{createTime},#{updateTime},#{isDel})
+    </insert>
+    <!--修改广告位-->
+    <update id="updatePromotionSpace"
+            parameterType="top.imlty.domain.PromotionSpace">
+        UPDATE promotion_space SET NAME = #{name},updateTime = #{updateTime}
+        where id = #{id}
+    </update>
+    <!--根据id查询广告位信息-->
+    <select id="findPromotionSpaceById" parameterType="int" resultType="top.imlty.domain.PromotionSpace">
+        select id,name from promotion_space where id =#{id}
+    </select>
+
+</mapper>

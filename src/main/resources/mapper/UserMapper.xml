@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.imlty.dao.UserMapper">
+    <!--用户分页多条件查询-->
+    <select id="findAllUserByPage" parameterType="top.imlty.vo.UserVO" resultType="top.imlty.domain.User">
+        select
+            *
+        from user
+        <where>
+            <if test="true">
+                and is_del != 1
+            </if>
+            <if test="username != null and username !='' ">
+                and phone like concat('%',#{username},'%')
+            </if>
+            <if test="startCreateTime != null and endCreateTime != null">
+                and create_time between #{startCreateTime} and #{endCreateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--修改用户状态-->
+    <update id="updateUserStatus">
+        UPDATE USER SET STATUS = #{status} where id = #{id};
+    </update>
+
+    <!--根据用户名查询 用户信息-->
+    <select id="login" parameterType="top.imlty.domain.User" resultType="top.imlty.domain.User">
+        select * from user where phone = #{phone}
+    </select>
+
+    <!--清空用户角色中间表-->
+    <delete id="deleteUserContextRole" parameterType="int" >
+        delete from user_role_relation where user_id= #{userId}
+    </delete>
+    <!--给用户添加角色信息-->
+    <insert id="userContextRole" parameterType="top.imlty.domain.User_Role_relation">
+        insert into user_role_relation values(null,#{userId},#{roleId},#{createdTime},#{updatedTime},#{createdBy},#{updatedBy})
+    </insert>
+    <!--1.根据用户id 查询关联的角色信息-->
+    <select id="findUserRelationRoleById" parameterType="int" resultType="top.imlty.domain.Role">
+        SELECT
+            r.id,
+            r.code,
+            r.name,
+            r.description
+        FROM roles r INNER JOIN user_role_relation ur
+        ON r.`id` = ur.`role_id` INNER JOIN user u ON ur.`user_id` = u.`id`
+        WHERE u.`id` = #{id}
+    </select>
+    <!--2.根据id查询用户拥有的顶级菜单信息-->
+    <select id="findParentMenuByRoleId" parameterType="java.util.List"
+            resultType="top.imlty.domain.Menu">
+        SELECT
+        m.id,
+        m.name,
+        m.parent_id,
+        m.order_num,
+        m.icon,
+        m.shown,
+        m.level,
+        m.href
+        FROM roles r INNER JOIN role_menu_relation rm ON r.`id` = rm.role_id
+        INNER JOIN menu m ON rm.menu_id = m.id
+        WHERE m.parent_id = -1 AND r.id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY m.id;
+    </select>
+
+
+    <!-- 3.根据顶级菜单的ID 查找子菜单 -->
+    <select id="findSubMenuByPid" parameterType="int" resultType="top.imlty.domain.Menu">
+        select * from menu where parent_id = #{id}
+    </select>
+    <!--4.根据角色的id值 多次遍历查询的资源信息-->
+    <select id="findResourceByRoleId" parameterType="list" resultType="top.imlty.domain.Resource">
+        SELECT DISTINCT
+          rs.*
+        FROM
+          roles r
+          INNER JOIN role_resource_relation rr
+            ON r.`id` = rr.`role_id`
+          INNER JOIN resource rs
+            ON rr.`resource_id` = rs.`id`
+        WHERE r.`id` in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+    <!--5.根据用户phone 查询用户信息 -->
+    <select id="findUserById" parameterType="string" resultType="top.imlty.domain.User">
+        select * from user where phone = #{phone};
+    </select>
+</mapper>
